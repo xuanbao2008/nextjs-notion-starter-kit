@@ -1,7 +1,8 @@
 import raf from 'raf'
 import random from 'random'
 import React, { Component } from 'react'
-import FluidAnimation from 'react-fluid-animation'
+
+import { ReactFluidAnimation } from './fluid-animation'
 
 const exp = random.exponential()
 const numSplatsPerEpoch = 1
@@ -38,7 +39,7 @@ export class HeroHeader extends Component<{
 
   override render() {
     return (
-      <FluidAnimation
+      <ReactFluidAnimation
         className={this.props.className}
         animationRef={this._animationRef}
       />
