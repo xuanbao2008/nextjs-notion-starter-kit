@@ -49,7 +49,7 @@ export default siteConfig({
   pageUrlOverrides: null,
 
   pageUrlAdditions: {
-    '/event': '23225e30af108096b75cfa8fbb5bfbf1'
+    '/event': '23225e30af1080f499ecf1f45803fe1e'
   },
 
   // whether to use the default notion navigation style or a custom one with links to
