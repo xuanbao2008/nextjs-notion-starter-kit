@@ -6,28 +6,28 @@ export default siteConfig({
 
   // if you want to restrict pages to a single notion workspace (optional)
   // (this should be a Notion ID; see the docs for how to extract this)
-  rootNotionSpaceId: 'fde5ac74eea345278f004482710e1af3',
+  rootNotionSpaceId: 'ea14b41c-eb0b-419d-86d1-3dbda704ff06',
 
   // basic site info (required)
-  name: 'Transitive Bullshit',
-  domain: 'transitivebullsh.it',
-  author: 'Travis Fischer',
+  name: 'iine',
+  domain: 'iine.jp',
+  author: 'Bao Doan',
 
   // open graph metadata (optional)
-  description: 'Personal site of Travis Fischer aka Transitive Bullshit',
+  description: 'Japan life blog - iine tip',
 
   // social usernames (optional)
-  twitter: 'transitive_bs',
-  github: 'transitive-bullshit',
-  linkedin: 'fisch2',
+  twitter: 'doanxuanbaoz',
+  // github: 'xuanbao2008',
+  linkedin: 'doanxuanbao',
   // mastodon: '#', // optional mastodon profile URL, provides link verification
   // newsletter: '#', // optional newsletter URL
   // youtube: '#', // optional youtube channel name or `channel/UCGbXXXXXXXXXXXXXXXXXXXXXX`
 
   // default notion icon and cover images for site-wide consistency (optional)
   // page-specific values will override these site-wide defaults
-  defaultPageIcon: 'https://transitivebullsh.it/page-icon.png',
-  defaultPageCover: 'https://transitivebullsh.it/page-cover.jpg',
+  defaultPageIcon: 'https://pbs.twimg.com/profile_images/1529905032615071744/pftlWiSU_400x400.jpg',
+  defaultPageCover: 'https://www.notion.so/images/page-cover/woodcuts_3.jpg',
   defaultPageCoverPosition: 0.5,
 
   // whether or not to enable support for LQIP preview images (optional)
@@ -36,7 +36,7 @@ export default siteConfig({
   // whether or not redis is enabled for caching generated preview images (optional)
   // NOTE: if you enable redis, you need to set the `REDIS_HOST` and `REDIS_PASSWORD`
   // environment variables. see the readme for more info
-  isRedisEnabled: true,
+  isRedisEnabled: false,
 
   // map of notion page IDs to URL paths (optional)
   // any pages defined here will override their default URL paths
@@ -49,7 +49,7 @@ export default siteConfig({
   pageUrlOverrides: null,
 
   pageUrlAdditions: {
-    '/the-social-audio-revolution': 'c4deaf33cc924ad7a5b9f69c6ae04a01'
+    '/event': '23225e30af108096b75cfa8fbb5bfbf1'
   },
 
   // whether to use the default notion navigation style or a custom one with links to
@@ -58,11 +58,11 @@ export default siteConfig({
   navigationLinks: [
     {
       title: 'About',
-      pageId: '8d0062776d0c4afca96eb1ace93a7538'
+      pageId: '9c131551696645d681f44d97b2334924'
     },
     {
       title: 'Contact',
-      pageId: '9a7ddf2973444067bbc5ce0a4e0e0058'
+      pageId: '23225e30af1080b79294d8afa85b9b73'
     }
   ]
 })
