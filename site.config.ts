@@ -6,28 +6,28 @@ export default siteConfig({
 
   // if you want to restrict pages to a single notion workspace (optional)
   // (this should be a Notion ID; see the docs for how to extract this)
-  rootNotionSpaceId: null,
+  rootNotionSpaceId: 'ea14b41c-eb0b-419d-86d1-3dbda704ff06',
 
   // basic site info (required)
-  name: 'Next.js Notion Starter Kit',
-  domain: 'nextjs-notion-starter-kit.transitivebullsh.it',
-  author: 'Travis Fischer',
+  name: 'iine',
+  domain: 'iine.jp',
+  author: 'Bao Doan',
 
   // open graph metadata (optional)
-  description: 'Example Next.js Notion Starter Kit Site',
+  description: 'Japan life blog - iine tip',
 
   // social usernames (optional)
-  twitter: 'transitive_bs',
-  github: 'transitive-bullshit',
-  linkedin: 'fisch2',
+  twitter: 'doanxuanbaoz',
+  // github: 'xuanbao2008',
+  linkedin: 'doanxuanbao',
   // mastodon: '#', // optional mastodon profile URL, provides link verification
   // newsletter: '#', // optional newsletter URL
   // youtube: '#', // optional youtube channel name or `channel/UCGbXXXXXXXXXXXXXXXXXXXXXX`
 
   // default notion icon and cover images for site-wide consistency (optional)
   // page-specific values will override these site-wide defaults
-  defaultPageIcon: null,
-  defaultPageCover: null,
+  defaultPageIcon: 'https://pbs.twimg.com/profile_images/1529905032615071744/pftlWiSU_400x400.jpg',
+  defaultPageCover: 'https://www.notion.so/images/page-cover/woodcuts_3.jpg',
   defaultPageCoverPosition: 0.5,
 
   // whether or not to enable support for LQIP preview images (optional)
@@ -48,18 +48,21 @@ export default siteConfig({
   // }
   pageUrlOverrides: null,
 
+  pageUrlAdditions: {
+    '/event': '23225e30af1080f499ecf1f45803fe1e'
+  },
+
   // whether to use the default notion navigation style or a custom one with links to
-  // important pages. To use `navigationLinks`, set `navigationStyle` to `custom`.
-  navigationStyle: 'default'
-  // navigationStyle: 'custom',
-  // navigationLinks: [
-  //   {
-  //     title: 'About',
-  //     pageId: 'f1199d37579b41cbabfc0b5174f4256a'
-  //   },
-  //   {
-  //     title: 'Contact',
-  //     pageId: '6a29ebcb935a4f0689fe661ab5f3b8d1'
-  //   }
-  // ]
+  // important pages
+  navigationStyle: 'custom',
+  navigationLinks: [
+    {
+      title: 'About',
+      pageId: '9c131551696645d681f44d97b2334924'
+    },
+    {
+      title: 'Contact',
+      pageId: '23225e30af1080b79294d8afa85b9b73'
+    }
+  ]
 })
