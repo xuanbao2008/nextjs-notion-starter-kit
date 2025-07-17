@@ -49,8 +49,8 @@ export default function NotionDomainDynamicPage(props: PageProps) {
     block && recordMap ? getPageProperty<string>(name, block, recordMap) : null
 
   const breadcrumbs = []
-  const category = toSlug(getProp('Category'))
-  const slug = toSlug(getProp('Slug') || getProp('title'))
+  const category = toSlug(getProp('Category') || '')
+  const slug = toSlug(getProp('Slug') || getProp('title') || '')
 
   if (category) breadcrumbs.push({ name: category, path: `/${category}` })
   if (slug) breadcrumbs.push({ name: slug, path: `/${category}/${slug}` })
