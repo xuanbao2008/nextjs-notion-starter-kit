@@ -20,6 +20,7 @@ export interface PageProps {
   error?: PageError
   tagsPage?: boolean
   propertyToFilterName?: string | null
+  breadcrumbs?: Array<{ name: string; path: string }>
 }
 
 export interface ExtendedTweetRecordMap extends ExtendedRecordMap {

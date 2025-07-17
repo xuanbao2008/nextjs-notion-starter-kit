@@ -203,6 +203,7 @@ const HeroHeader = dynamic<{ className?: string }>(
 
 export function NotionPage({
   site,
+  breadcrumbs,
   recordMap,
   error,
   pageId,
