@@ -1,7 +1,7 @@
 import { getAllPagesInSpace } from 'notion-utils'
 import { pageUrlOverrides, pageUrlAdditions, rootNotionPageId, rootNotionSpaceId } from './config'
 import { toSlug } from './to-slug'
-import { SiteMap } from './types'
+import type { SiteMap } from './types'
 import siteConfig from 'site.config'
 
 /**
