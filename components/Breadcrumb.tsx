@@ -14,6 +14,7 @@ export function Breadcrumb({ segments, path }: BreadcrumbProps) {
           <li key={idx} className="flex items-center">
             <Link
               href={path[idx] ?? '#'}
+              prefetch={false}
               className="text-blue-600 hover:underline capitalize"
             >
               {segment?.replaceAll?.('-', ' ') ?? ''}

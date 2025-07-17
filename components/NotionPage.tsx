@@ -174,7 +174,7 @@ export function NotionPage({
   }
 
   // const canonicalPageUrl = config.isDev ? undefined : getCanonicalPageUrl(site, recordMap)(pageId)
-  const canonicalPageUrl = config.isDev ? undefined : `${site?.domain?.startsWith('http') ? '' : 'https://'}${site?.domain}/${breadcrumbs?.map(b => b.name).join('/')}`
+  const canonicalPageUrl = config.isDev ? undefined : `https://${site.domain}${props.breadcrumbs?.[props.breadcrumbs.length - 1]?.path || ''}`
 
   const socialImage = mapImageUrl(
     getPageProperty<string>('Social Image', block, recordMap) ||

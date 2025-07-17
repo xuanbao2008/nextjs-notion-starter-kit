@@ -83,7 +83,7 @@ export function PageHead({
 
       {url && (
         <>
-          <link rel='canonical' href={url} />
+          <link rel='canonical' href={url} prefetch={false} />
           <meta property='og:url' content={url} />
           <meta property='twitter:url' content={url} />
         </>
@@ -94,6 +94,7 @@ export function PageHead({
         type='application/rss+xml'
         href={rssFeedUrl}
         title={site?.name}
+        prefetch={false}
       />
       <meta name='follow.it-verification-code' content='c0A1rAARM3FC2XRfMAke' />
 
