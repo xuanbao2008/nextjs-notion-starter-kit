@@ -11,6 +11,7 @@ import { type PageProps } from '@/lib/types'
 export const getServerSideProps: GetServerSideProps<PageProps> = async (context) => {
   const pathParts = context.params?.pageId
   const requestedPath = Array.isArray(pathParts) ? pathParts.join('/') : pathParts
+  const requestedSegments = requestedPath?.split('/').filter(Boolean) || []
 
   try {
     const siteMap = await getSiteMap()
@@ -23,18 +24,21 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       const title = getPageProperty<string>('title', block, recordMap)
       const categoryProp = getPageProperty<string>('Category', block, recordMap)
 
-      const slug = toSlug(slugProp || title || '')
+      const slug = toSlug(slugProp || title)
       const category = toSlug(categoryProp || '')
 
-      const fullSlug = category ? `${category}/${slug}` : slug
-
-      if (fullSlug === requestedPath) {
+      if (
+        (category && requestedSegments.length === 2 &&
+          requestedSegments[0] === category &&
+          requestedSegments[1] === slug) ||
+        (!category && requestedSegments.length === 1 &&
+          requestedSegments[0] === slug)
+      ) {
         const props = await resolveNotionPage(domain, pageId)
         return { props }
       }
     }
 
-    // No match found
     return { notFound: true }
   } catch (err) {
     console.error('Page error:', domain, requestedPath, err)
@@ -59,9 +63,7 @@ export default function NotionDomainDynamicPage(props: PageProps) {
   const breadcrumbs = []
   if (category) {
     breadcrumbs.push({ name: category, path: `/${category}` })
-    if (slug) {
-      breadcrumbs.push({ name: slug, path: `/${category}/${slug}` })
-    }
+    breadcrumbs.push({ name: slug, path: `/${category}/${slug}` })
   } else if (slug) {
     breadcrumbs.push({ name: slug, path: `/${slug}` })
   }
