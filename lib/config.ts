@@ -27,8 +27,8 @@ if (!rootNotionPageId) {
 export const rootNotionSpaceId: string | null =
   parsePageId(getSiteConfig('rootNotionSpaceId'), { uuid: true }) ?? null
 
-export const pageUrlOverrides = {}
-export const pageUrlAdditions = {}
+export const pageUrlOverrides: Record<string, string> = {}
+export const pageUrlAdditions: Record<string, string> = {}
 export const inversePageUrlOverrides: PageUrlOverridesInverseMap = {}
 
 export const environment = process.env.NODE_ENV || 'development'
