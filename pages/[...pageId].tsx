@@ -19,28 +19,23 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     const siteMap = await getSiteMap()
 
     for (const [pageId, recordMap] of Object.entries(siteMap.pageMap)) {
+      if (!recordMap) continue
+    
       const block = recordMap.block?.[pageId]?.value
       if (!block) continue
-
-      // Pull properties
-      const slugProp = getPageProperty<string>('Slug', block, recordMap)
+    
+      const slug = getPageProperty<string>('Slug', block, recordMap)?.trim()
+      const category = getPageProperty<string>('Category', block, recordMap)?.trim()
       const title = getBlockTitle(block, recordMap)
-      const category = getPageProperty<string>('Category', block, recordMap)
-      const locale = getPageProperty<string>('Locale', block, recordMap)
-      const year = getPageProperty<string>('Year', block, recordMap)
-
-      // Normalize
-      const slug = toSlug(slugProp || title)
-      if (!slug) continue
-
-      const parts = [locale, year, category, slug].filter(Boolean).map(toSlug)
-      const fullSlug = parts.join('/')
-
-      if (fullSlug === requestedPath) {
+    
+      const path = slug || title
+      const fullSlug = category ? `${category}/${path}` : path
+    
+      if (fullSlug && fullSlug === requestedPath) {
         const props = await resolveNotionPage(domain, pageId)
         return { props }
       }
-    }
+    }    
 
     return { notFound: true }
   } catch (err) {
