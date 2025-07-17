@@ -4,7 +4,6 @@
 import { parsePageId } from 'notion-utils'
 import { type PostHogConfig } from 'posthog-js'
 import {
-  type NavigationStyle,
   type PageUrlOverridesInverseMap,
   type PageUrlOverridesMap,
   type Site
