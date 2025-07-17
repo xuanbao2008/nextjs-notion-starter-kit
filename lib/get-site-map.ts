@@ -1,60 +1,95 @@
-import { getAllPagesInSpace } from 'notion-utils'
-import { pageUrlOverrides, pageUrlAdditions, rootNotionPageId, rootNotionSpaceId } from './config'
-import { toSlug } from './to-slug'
-import type { SiteMap } from './types'
-import siteConfig from 'site.config'
+import { getAllPagesInSpace, getPageProperty, uuidToId } from 'notion-utils'
+import pMemoize from 'p-memoize'
 
-/**
- * Builds the canonical page map and page map for routing and metadata.
- */
-export async function getSiteMap(): Promise<SiteMap> {
-  // Get full Notion space map
-  const rawSiteMap = await getAllPagesInSpace(
-    rootNotionPageId,
-    rootNotionSpaceId ?? undefined
+import type * as types from './types'
+import * as config from './config'
+import { includeNotionIdInUrls } from './config'
+import { getCanonicalPageId } from './get-canonical-page-id'
+import { notion } from './notion-api'
+import { toSlug } from './to-slug'
+
+const uuid = !!includeNotionIdInUrls
+
+export async function getSiteMap(): Promise<types.SiteMap> {
+  const partialSiteMap = await getAllPages(
+    config.rootNotionPageId,
+    config.rootNotionSpaceId ?? undefined
   )
 
-  const canonicalPageMap: SiteMap['canonicalPageMap'] = {}
-  const pageMap: SiteMap['pageMap'] = rawSiteMap as SiteMap['pageMap']
+  return {
+    site: config.site,
+    ...partialSiteMap
+  } as types.SiteMap
+}
 
-  // Derive slugs from block metadata
+const getAllPages = pMemoize(getAllPagesImpl, {
+  cacheKey: (...args) => JSON.stringify(args)
+})
+
+const getPage = async (pageId: string, opts?: any) => {
+  console.log('\nnotion getPage', uuidToId(pageId))
+  return notion.getPage(pageId, {
+    throwOnCollectionErrors: true,
+    kyOptions: {
+      timeout: 30_000
+    },
+    ...opts
+  })
+}
+
+async function getAllPagesImpl(
+  rootNotionPageId: string,
+  rootNotionSpaceId?: string,
+  {
+    maxDepth = 1
+  }: {
+    maxDepth?: number
+  } = {}
+): Promise<Partial<types.SiteMap>> {
+  const pageMap = await getAllPagesInSpace(
+    rootNotionPageId,
+    rootNotionSpaceId,
+    getPage,
+    {
+      maxDepth
+    }
+  )
+
+  const canonicalPageMap: Record<string, string> = {}
+
   for (const pageId of Object.keys(pageMap)) {
     const recordMap = pageMap[pageId]
-    const block = recordMap?.block?.[pageId]?.value
+    if (!recordMap) continue
 
-    if (!block || block.type !== 'page') continue
-
-    const slug = toSlug(block.properties?.Slug?.[0]?.[0] || block.properties?.title?.[0]?.[0])
-    const category = toSlug(block.properties?.Category?.[0]?.[0] || '')
-    const fullPath = category ? `${category}/${slug}` : slug
-
-    if (slug) {
-      canonicalPageMap[fullPath] = pageId
+    const block = recordMap.block[pageId]?.value
+    if (
+      !(getPageProperty<boolean | null>('Public', block!, recordMap) ?? true)
+    ) {
+      continue
     }
-  }
 
-  // Add hard-coded overrides (e.g. /foo -> specific pageId)
-  for (const slug in pageUrlOverrides) {
-    const pageId = pageUrlOverrides[slug]
-    if (pageId) {
-      canonicalPageMap[slug] = pageId
-    }
-  }
+    const canonicalPageId = getCanonicalPageId(pageId, recordMap, { uuid })!
+    const slugProp = getPageProperty<string>('Slug', block, recordMap)
+    const title = getPageProperty<string>('title', block, recordMap)
+    const categoryProp = getPageProperty<string>('Category', block, recordMap)
 
-  for (const slug in pageUrlAdditions) {
-    const pageId = pageUrlAdditions[slug]
-    if (pageId) {
-      canonicalPageMap[slug] = pageId
+    const slug = toSlug(slugProp || title)
+    const category = toSlug(categoryProp || '')
+    const fullSlug = category ? `${category}/${slug}` : slug
+
+    if (canonicalPageMap[fullSlug]) {
+      console.warn('warning duplicate canonical page id (slug)', {
+        fullSlug,
+        pageId,
+        existingPageId: canonicalPageMap[fullSlug]
+      })
+      continue
     }
+
+    canonicalPageMap[fullSlug] = pageId
   }
 
   return {
-    site: {
-      name: siteConfig.name,
-      domain: siteConfig.domain,
-      rootNotionPageId,
-      rootNotionSpaceId
-    },
     pageMap,
     canonicalPageMap
   }
