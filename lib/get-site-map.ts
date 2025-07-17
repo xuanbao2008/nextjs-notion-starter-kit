@@ -3,12 +3,8 @@ import pMemoize from 'p-memoize'
 
 import type * as types from './types'
 import * as config from './config'
-import { includeNotionIdInUrls } from './config'
-import { getCanonicalPageId } from './get-canonical-page-id'
 import { notion } from './notion-api'
 import { toSlug } from './to-slug'
-
-const uuid = !!includeNotionIdInUrls
 
 export async function getSiteMap(): Promise<types.SiteMap> {
   const partialSiteMap = await getAllPages(
@@ -67,7 +63,6 @@ async function getAllPagesImpl(
     const isPublic = getPageProperty<boolean | null>('Public', block, recordMap) ?? true
     if (!isPublic) continue
   
-    const canonicalPageId = getCanonicalPageId(pageId, recordMap, { uuid })!
     const slugProp = getPageProperty<string>('Slug', block, recordMap)
     const title = getPageProperty<string>('title', block, recordMap)
     const categoryProp = getPageProperty<string>('Category', block, recordMap)

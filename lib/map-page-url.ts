@@ -1,6 +1,7 @@
-import { toSlug } from './to-slug'
 import { type ExtendedRecordMap } from 'notion-types'
+
 import type { Site } from './types'
+import { toSlug } from './to-slug'
 
 export const mapPageUrl = (
   site: Site,

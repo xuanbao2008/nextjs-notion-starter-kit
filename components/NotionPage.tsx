@@ -5,11 +5,18 @@ import dynamic from 'next/dynamic'
 import Image from 'next/legacy/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { getBlockTitle, getPageProperty, parsePageId } from 'notion-utils'
+import { getBlockTitle, getPageProperty } from 'notion-utils'
 import * as React from 'react'
 import BodyClassName from 'react-body-classname'
-import { NotionRenderer, useNotionContext } from 'react-notion-x'
+import { NotionRenderer } from 'react-notion-x'
 import { useSearchParam } from 'react-use'
+
+import type * as types from '@/lib/types'
+import * as config from '@/lib/config'
+import { mapImageUrl } from '@/lib/map-image-url'
+import { getCanonicalPageUrl, mapPageUrl } from '@/lib/map-page-url'
+import { searchNotion } from '@/lib/search-notion'
+import { useDarkMode } from '@/lib/use-dark-mode'
 
 import { Breadcrumb } from './Breadcrumb'
 import { Footer } from './Footer'
@@ -18,12 +25,6 @@ import { NotionPageHeader } from './NotionPageHeader'
 import { Page404 } from './Page404'
 import { PageAside } from './PageAside'
 import { PageHead } from './PageHead'
-import { mapImageUrl } from '@/lib/map-image-url'
-import { getCanonicalPageUrl, mapPageUrl } from '@/lib/map-page-url'
-import { searchNotion } from '@/lib/search-notion'
-import { useDarkMode } from '@/lib/use-dark-mode'
-import * as config from '@/lib/config'
-import type * as types from '@/lib/types'
 
 const Code = dynamic(() =>
   import('react-notion-x/build/third-party/code').then(async (m) => {
@@ -68,9 +69,9 @@ export function NotionPage(props: types.PageProps) {
   const getProp = (name: string) =>
     getPageProperty<string>(name, block, recordMap) || ''
 
-  const category = getProp('Category')?.trim().toLowerCase().replace(/\s+/g, '-')
-  const slug = getProp('Slug')?.trim().toLowerCase().replace(/\s+/g, '-') || 
-               getProp('title')?.trim().toLowerCase().replace(/\s+/g, '-')
+  const category = getProp('Category')?.trim().toLowerCase().replaceAll(/\s+/g, '-')
+  const slug = getProp('Slug')?.trim().toLowerCase().replaceAll(/\s+/g, '-') || 
+               getProp('title')?.trim().toLowerCase().replaceAll(/\s+/g, '-')
 
   const breadcrumbs = []
   if (category) breadcrumbs.push({ name: category, path: `/${category}` })
