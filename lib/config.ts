@@ -3,6 +3,13 @@
  */
 import { parsePageId } from 'notion-utils'
 import { type PostHogConfig } from 'posthog-js'
+import {
+  type NavigationStyle,
+  type PageUrlOverridesInverseMap,
+  type PageUrlOverridesMap,
+  type Site
+} from './types'
+
 
 import {
   getEnv,
@@ -34,7 +41,8 @@ export const rootNotionSpaceId: string | null =
 // --- OVERRIDES DISABLED: Slug/Category logic is used instead
 export const pageUrlOverrides = {}
 export const pageUrlAdditions = {}
-export const inversePageUrlOverrides = {}
+
+export const inversePageUrlOverrides: PageUrlOverridesInverseMap = {}
 
 // Env and site basics
 export const environment = process.env.NODE_ENV || 'development'

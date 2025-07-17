@@ -6,6 +6,9 @@ export * from 'notion-types'
 
 export type NavigationStyle = 'default' | 'custom'
 
+export type PageUrlOverridesMap = Record<string, string>
+export type PageUrlOverridesInverseMap = Record<string, string>
+
 export interface PageError {
   message?: string
   statusCode: number
