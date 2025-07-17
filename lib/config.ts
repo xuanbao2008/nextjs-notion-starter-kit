@@ -1,8 +1,5 @@
 /**
  * Site-wide app configuration.
- *
- * This file pulls from the root "site.config.ts" as well as environment variables
- * for optional depenencies.
  */
 import { parsePageId } from 'notion-utils'
 import { type PostHogConfig } from 'posthog-js'
@@ -20,42 +17,36 @@ import {
   type Site
 } from './types'
 
+// Root Notion page setup
 export const rootNotionPageId: string = parsePageId(
   getSiteConfig('rootNotionPageId'),
   { uuid: false }
 )!
 
 if (!rootNotionPageId) {
-  throw new Error('Config error invalid "rootNotionPageId"')
+  throw new Error('Config error: invalid "rootNotionPageId"')
 }
 
-// if you want to restrict pages to a single notion workspace (optional)
+// Optional: lock to one Notion workspace
 export const rootNotionSpaceId: string | null =
   parsePageId(getSiteConfig('rootNotionSpaceId'), { uuid: true }) ?? null
 
-export const pageUrlOverrides = cleanPageUrlMap(
-  getSiteConfig('pageUrlOverrides', {}) || {},
-  { label: 'pageUrlOverrides' }
-)
+// --- OVERRIDES DISABLED: Slug/Category logic is used instead
+export const pageUrlOverrides = {}
+export const pageUrlAdditions = {}
+export const inversePageUrlOverrides = {}
 
-export const pageUrlAdditions = cleanPageUrlMap(
-  getSiteConfig('pageUrlAdditions', {}) || {},
-  { label: 'pageUrlAdditions' }
-)
-
-export const inversePageUrlOverrides = invertPageUrlOverrides(pageUrlOverrides)
-
+// Env and site basics
 export const environment = process.env.NODE_ENV || 'development'
 export const isDev = environment === 'development'
 
-// general site config
 export const name: string = getRequiredSiteConfig('name')
 export const author: string = getRequiredSiteConfig('author')
 export const domain: string = getRequiredSiteConfig('domain')
 export const description: string = getSiteConfig('description', 'Notion Blog')
 export const language: string = getSiteConfig('language', 'en')
 
-// social accounts
+// Social links
 export const twitter: string | undefined = getSiteConfig('twitter')
 export const mastodon: string | undefined = getSiteConfig('mastodon')
 export const github: string | undefined = getSiteConfig('github')
@@ -65,17 +56,12 @@ export const newsletter: string | undefined = getSiteConfig('newsletter')
 export const zhihu: string | undefined = getSiteConfig('zhihu')
 
 export const getMastodonHandle = (): string | undefined => {
-  if (!mastodon) {
-    return
-  }
-
-  // Since Mastodon is decentralized, handles include the instance domain name.
-  // e.g. @example@mastodon.social
+  if (!mastodon) return
   const url = new URL(mastodon)
   return `${url.pathname.slice(1)}@${url.hostname}`
 }
 
-// default notion values for site-wide consistency (optional; may be overridden on a per-page basis)
+// Default Notion styles
 export const defaultPageIcon: string | undefined =
   getSiteConfig('defaultPageIcon')
 export const defaultPageCover: string | undefined =
@@ -85,39 +71,35 @@ export const defaultPageCoverPosition: number = getSiteConfig(
   0.5
 )
 
-// Optional whether or not to enable support for LQIP preview images
+// Image preview / LQIP
 export const isPreviewImageSupportEnabled: boolean = getSiteConfig(
   'isPreviewImageSupportEnabled',
   false
 )
 
-// Optional whether or not to include the Notion ID in page URLs or just use slugs
+// Slug-based URLs (no Notion IDs in URLs)
 export const includeNotionIdInUrls: boolean = getSiteConfig(
   'includeNotionIdInUrls',
   !!isDev
 )
 
+// Navigation
 export const navigationStyle: NavigationStyle = getSiteConfig(
   'navigationStyle',
   'default'
 )
-
 export const navigationLinks: Array<NavigationLink | undefined> = getSiteConfig(
   'navigationLinks',
   null
 )
 
-// Optional site search
+// Site search
 export const isSearchEnabled: boolean = getSiteConfig('isSearchEnabled', true)
 
-// ----------------------------------------------------------------------------
-
-// Optional redis instance for persisting preview images
+// Redis (optional)
 export const isRedisEnabled: boolean =
   getSiteConfig('isRedisEnabled', false) || !!getEnv('REDIS_ENABLED', null)
 
-// (if you want to enable redis, only REDIS_HOST and REDIS_PASSWORD are required)
-// we recommend that you store these in a local `.env` file
 export const redisHost = getEnv('REDIS_HOST', isRedisEnabled ? undefined : null)
 export const redisPassword = getEnv(
   'REDIS_PASSWORD',
@@ -130,8 +112,7 @@ export const redisUrl = getEnv(
 )
 export const redisNamespace = getEnv('REDIS_NAMESPACE', 'preview-images')
 
-// ----------------------------------------------------------------------------
-
+// Runtime environment flags
 export const isServer = typeof window === 'undefined'
 
 export const port = getEnv('PORT', '3000')
@@ -148,8 +129,7 @@ export const api = {
   getSocialImage: `${apiBaseUrl}/social-image`
 }
 
-// ----------------------------------------------------------------------------
-
+// Core site descriptor
 export const site: Site = {
   domain,
   name,
@@ -158,62 +138,13 @@ export const site: Site = {
   description
 }
 
+// Analytics
 export const fathomId = isDev ? undefined : process.env.NEXT_PUBLIC_FATHOM_ID
 export const fathomConfig = fathomId
-  ? {
-      excludedDomains: ['localhost', 'localhost:3000']
-    }
+  ? { excludedDomains: ['localhost', 'localhost:3000'] }
   : undefined
 
 export const posthogId = process.env.NEXT_PUBLIC_POSTHOG_ID
 export const posthogConfig: Partial<PostHogConfig> = {
   api_host: 'https://app.posthog.com'
-}
-
-function cleanPageUrlMap(
-  pageUrlMap: PageUrlOverridesMap,
-  {
-    label
-  }: {
-    label: string
-  }
-): PageUrlOverridesMap {
-  return Object.keys(pageUrlMap).reduce((acc, uri) => {
-    const pageId = pageUrlMap[uri]
-    const uuid = parsePageId(pageId, { uuid: false })
-
-    if (!uuid) {
-      throw new Error(`Invalid ${label} page id "${pageId}"`)
-    }
-
-    if (!uri) {
-      throw new Error(`Missing ${label} value for page "${pageId}"`)
-    }
-
-    if (!uri.startsWith('/')) {
-      throw new Error(
-        `Invalid ${label} value for page "${pageId}": value "${uri}" should be a relative URI that starts with "/"`
-      )
-    }
-
-    const path = uri.slice(1)
-
-    return {
-      ...acc,
-      [path]: uuid
-    }
-  }, {})
-}
-
-function invertPageUrlOverrides(
-  pageUrlOverrides: PageUrlOverridesMap
-): PageUrlOverridesInverseMap {
-  return Object.keys(pageUrlOverrides).reduce((acc, uri) => {
-    const pageId = pageUrlOverrides[uri]!
-
-    return {
-      ...acc,
-      [pageId]: uri
-    }
-  }, {})
 }

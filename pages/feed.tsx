@@ -11,7 +11,6 @@ import RSS from 'rss'
 import * as config from '@/lib/config'
 import { getSiteMap } from '@/lib/get-site-map'
 import { getSocialImageUrl } from '@/lib/get-social-image-url'
-import { getCanonicalPageUrl } from '@/lib/map-page-url'
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   if (req.method !== 'GET') {
@@ -23,7 +22,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   }
 
   const siteMap = await getSiteMap()
-  const ttlMinutes = 24 * 60 // 24 hours
+  const ttlMinutes = 24 * 60
   const ttlSeconds = ttlMinutes * 60
 
   const feed = new RSS({
@@ -34,34 +33,29 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
     ttl: ttlMinutes
   })
 
-  for (const pagePath of Object.keys(siteMap.canonicalPageMap)) {
-    const pageId = siteMap.canonicalPageMap[pagePath]!
+  for (const path of Object.keys(siteMap.canonicalPageMap)) {
+    const pageId = siteMap.canonicalPageMap[path]
     const recordMap = siteMap.pageMap[pageId] as ExtendedRecordMap
     if (!recordMap) continue
 
-    const keys = Object.keys(recordMap?.block || {})
-    const block = recordMap?.block?.[keys[0]!]?.value
+    const keys = Object.keys(recordMap.block || {})
+    const block = recordMap.block?.[keys[0]]?.value
     if (!block) continue
 
+    // Filter to blog posts (optional: remove this block to include all pages)
     const parentPage = getBlockParentPage(block, recordMap)
     const isBlogPost =
       block.type === 'page' &&
       block.parent_table === 'collection' &&
       parentPage?.id === idToUuid(config.rootNotionPageId)
-    if (!isBlogPost) {
-      continue
-    }
+    if (!isBlogPost) continue
 
     const title = getBlockTitle(block, recordMap) || config.name
     const description =
       getPageProperty<string>('Description', block, recordMap) ||
       config.description
-    const url = getCanonicalPageUrl(config.site, recordMap)(pageId)
-    const lastUpdatedTime = getPageProperty<number>(
-      'Last Updated',
-      block,
-      recordMap
-    )
+    const url = `${config.host}/${path}` // Use "category/slug" path
+    const lastUpdatedTime = getPageProperty<number>('Last Updated', block, recordMap)
     const publishedTime = getPageProperty<number>('Published', block, recordMap)
     const date = lastUpdatedTime
       ? new Date(lastUpdatedTime)

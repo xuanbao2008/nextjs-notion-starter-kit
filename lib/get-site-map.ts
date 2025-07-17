@@ -1,10 +1,9 @@
-import { getAllPagesInSpace, getPageProperty, uuidToId } from 'notion-utils'
+import { getAllPagesInSpace, getPageProperty, getBlockTitle, uuidToId } from 'notion-utils'
 import pMemoize from 'p-memoize'
 
 import type * as types from './types'
 import * as config from './config'
 import { includeNotionIdInUrls } from './config'
-import { getCanonicalPageId } from './get-canonical-page-id'
 import { notion } from './notion-api'
 
 const uuid = !!includeNotionIdInUrls
@@ -36,6 +35,10 @@ const getPage = async (pageId: string, opts?: any) => {
   })
 }
 
+// Utility to convert a string into kebab-case (URL-safe)
+const toSlug = (s?: string | null): string =>
+  s?.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-') ?? ''
+
 async function getAllPagesImpl(
   rootNotionPageId: string,
   rootNotionSpaceId?: string,
@@ -49,9 +52,7 @@ async function getAllPagesImpl(
     rootNotionPageId,
     rootNotionSpaceId,
     getPage,
-    {
-      maxDepth
-    }
+    { maxDepth }
   )
 
   const canonicalPageMap = Object.keys(pageMap).reduce(
@@ -68,25 +69,30 @@ async function getAllPagesImpl(
         return map
       }
 
-      const canonicalPageId = getCanonicalPageId(pageId, recordMap, {
-        uuid
-      })!
+      const slugProp = getPageProperty<string>('Slug', block, recordMap)
+      const title = getBlockTitle(block, recordMap)
+      const slug = toSlug(slugProp || title)
+      if (!slug) return map
 
-      if (map[canonicalPageId]) {
-        // you can have multiple pages in different collections that have the same id
-        // TODO: we may want to error if neither entry is a collection page
-        console.warn('warning duplicate canonical page id', {
-          canonicalPageId,
+      const category = toSlug(getPageProperty<string>('Category', block, recordMap))
+      const locale = toSlug(getPageProperty<string>('Locale', block, recordMap))
+      const year = toSlug(getPageProperty<string>('Year', block, recordMap))
+
+      const parts = [locale, year, category, slug].filter(Boolean)
+      const fullPath = parts.join('/')
+
+      if (map[fullPath]) {
+        console.warn('Duplicate canonical path detected:', {
+          fullPath,
           pageId,
-          existingPageId: map[canonicalPageId]
+          existing: map[fullPath]
         })
-
         return map
-      } else {
-        return {
-          ...map,
-          [canonicalPageId]: pageId
-        }
+      }
+
+      return {
+        ...map,
+        [fullPath]: pageId
       }
     },
     {}
