@@ -1,101 +1,51 @@
-import type { GetServerSideProps } from 'next'
+import { type GetServerSideProps } from 'next'
+import { getBlockParentPage, getBlockTitle } from 'notion-utils'
 import RSS from 'rss'
-import {
-  getBlockParentPage,
-  getBlockTitle,
-  getPageProperty,
-  idToUuid
-} from 'notion-utils'
 
-import * as config from '@/lib/config'
-import { getCanonicalPageUrl } from '@/lib/map-page-url'
+import { host } from '@/lib/config'
 import { getSiteMap } from '@/lib/get-site-map'
-import { getSocialImageUrl } from '@/lib/get-social-image-url'
+import { type SiteMap } from '@/lib/types'
 
-export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
-  if (req.method !== 'GET') {
-    res.statusCode = 405
-    res.setHeader('Content-Type', 'application/json')
-    res.write(JSON.stringify({ error: 'method not allowed' }))
-    res.end()
-    return { props: {} }
-  }
-
-  const siteMap = await getSiteMap()
-  const ttlMinutes = 24 * 60
-  const ttlSeconds = ttlMinutes * 60
+export const getServerSideProps: GetServerSideProps = async ({ res }) => {
+  const siteMap: SiteMap = await getSiteMap()
 
   const feed = new RSS({
-    title: config.name,
-    site_url: config.host,
-    feed_url: `${config.host}/feed.xml`,
-    language: config.language,
-    ttl: ttlMinutes
+    title: `RSS Feed - ${siteMap.site.name}`,
+    site_url: `https://${siteMap.site.domain}`,
+    feed_url: `${host}/feed`,
+    pubDate: new Date()
   })
 
   for (const path of Object.keys(siteMap.canonicalPageMap)) {
     const pageId = siteMap.canonicalPageMap[path]
-    if (!pageId) continue
-  
-    const recordMap = siteMap.pageMap[pageId]
+    const recordMap = siteMap.pageMap?.[pageId]
     if (!recordMap) continue
-  
-    const blockKeys = Object.keys(recordMap.block || {})
-    const firstKey = blockKeys[0]
-    const block = firstKey ? recordMap.block[firstKey]?.value : null
+
+    const keys = Object.keys(recordMap.block || {})
+    const block = keys.length > 0 ? recordMap.block?.[keys[0]]?.value : null
     if (!block) continue
-  
+
     const parentPage = getBlockParentPage(block, recordMap)
-    const isBlogPost =
-      block.type === 'page' &&
-      block.parent_table === 'collection' &&
-      parentPage?.id === idToUuid(config.rootNotionPageId)
-  
-    if (!isBlogPost) continue
-  
-    const title = getBlockTitle(block, recordMap) || config.name
-    const description =
-      getPageProperty<string>('Description', block, recordMap) || config.description
-  
-    const url = getCanonicalPageUrl(config.site, recordMap)(pageId)
-    const lastUpdatedTime = getPageProperty<number>('Last Updated', block, recordMap)
-    const publishedTime = getPageProperty<number>('Published', block, recordMap)
-  
-    const date = lastUpdatedTime
-      ? new Date(lastUpdatedTime)
-      : publishedTime
-      ? new Date(publishedTime)
-      : new Date()
-  
-    const socialImageUrl = getSocialImageUrl(pageId)
-  
+    if (!parentPage) continue
+
+    const title = getBlockTitle(block, recordMap)
+    const url = `${host}/${path}`
+
     feed.item({
       title,
+      guid: pageId,
       url,
-      date,
-      description,
-      enclosure: socialImageUrl
-        ? {
-            url: socialImageUrl,
-            type: 'image/jpeg'
-          }
-        : undefined
+      date: block.created_time
     })
-  }  
+  }
 
-  const feedText = feed.xml({ indent: true })
-
-  res.setHeader(
-    'Cache-Control',
-    `public, max-age=${ttlSeconds}, stale-while-revalidate=${ttlSeconds}`
-  )
-  res.setHeader('Content-Type', 'text/xml; charset=utf-8')
-  res.write(feedText)
+  res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8')
+  res.write(feed.xml({ indent: true }))
   res.end()
 
   return { props: {} }
 }
 
-export default function noop() {
+export default function RSSFeed() {
   return null
 }

@@ -1,8 +1,5 @@
-/**
- * Site-wide app configuration.
- */
-import { type PostHogConfig } from 'posthog-js'
 import { parsePageId } from 'notion-utils'
+import { type PostHogConfig } from 'posthog-js'
 
 import {
   getEnv,
@@ -27,16 +24,13 @@ if (!rootNotionPageId) {
   throw new Error('Config error: invalid "rootNotionPageId"')
 }
 
-// Optional: lock to one Notion workspace
 export const rootNotionSpaceId: string | null =
   parsePageId(getSiteConfig('rootNotionSpaceId'), { uuid: true }) ?? null
 
-// --- OVERRIDES DISABLED: Slug/Category logic is used instead
-export const pageUrlOverrides: PageUrlOverridesMap = {}
-export const pageUrlAdditions: PageUrlOverridesMap = {}
+export const pageUrlOverrides = {}
+export const pageUrlAdditions = {}
 export const inversePageUrlOverrides: PageUrlOverridesInverseMap = {}
 
-// Env and site basics
 export const environment = process.env.NODE_ENV || 'development'
 export const isDev = environment === 'development'
 
@@ -46,7 +40,6 @@ export const domain: string = getRequiredSiteConfig('domain')
 export const description: string = getSiteConfig('description', 'Notion Blog')
 export const language: string = getSiteConfig('language', 'en')
 
-// Social links
 export const twitter: string | undefined = getSiteConfig('twitter')
 export const mastodon: string | undefined = getSiteConfig('mastodon')
 export const github: string | undefined = getSiteConfig('github')
@@ -61,7 +54,6 @@ export const getMastodonHandle = (): string | undefined => {
   return `${url.pathname.slice(1)}@${url.hostname}`
 }
 
-// Default Notion styles
 export const defaultPageIcon: string | undefined =
   getSiteConfig('defaultPageIcon')
 export const defaultPageCover: string | undefined =
@@ -71,33 +63,27 @@ export const defaultPageCoverPosition: number = getSiteConfig(
   0.5
 )
 
-// Image preview / LQIP
 export const isPreviewImageSupportEnabled: boolean = getSiteConfig(
   'isPreviewImageSupportEnabled',
   false
 )
 
-// Slug-based URLs (no Notion IDs in URLs)
 export const includeNotionIdInUrls: boolean = getSiteConfig(
   'includeNotionIdInUrls',
   !!isDev
 )
 
-// Navigation
 export const navigationStyle: NavigationStyle = getSiteConfig(
   'navigationStyle',
   'default'
 )
-
 export const navigationLinks: Array<NavigationLink | undefined> = getSiteConfig(
   'navigationLinks',
   null
 )
 
-// Site search
 export const isSearchEnabled: boolean = getSiteConfig('isSearchEnabled', true)
 
-// Redis (optional)
 export const isRedisEnabled: boolean =
   getSiteConfig('isRedisEnabled', false) || !!getEnv('REDIS_ENABLED', null)
 
@@ -113,7 +99,6 @@ export const redisUrl = getEnv(
 )
 export const redisNamespace = getEnv('REDIS_NAMESPACE', 'preview-images')
 
-// Runtime environment flags
 export const isServer = typeof window === 'undefined'
 
 export const port = getEnv('PORT', '3000')
@@ -130,7 +115,6 @@ export const api = {
   getSocialImage: `${apiBaseUrl}/social-image`
 }
 
-// Core site descriptor
 export const site: Site = {
   domain,
   name,
@@ -139,7 +123,6 @@ export const site: Site = {
   description
 }
 
-// Analytics
 export const fathomId = isDev ? undefined : process.env.NEXT_PUBLIC_FATHOM_ID
 export const fathomConfig = fathomId
   ? { excludedDomains: ['localhost', 'localhost:3000'] }

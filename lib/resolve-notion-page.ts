@@ -1,8 +1,8 @@
 import { parsePageId } from 'notion-utils'
 
 import * as acl from './acl'
-import { db } from './db'
 import { environment, pageUrlAdditions, pageUrlOverrides, site } from './config'
+import { db } from './db'
 import { getSiteMap } from './get-site-map'
 import { getPage } from './notion'
 import type { PageProps } from './types'
@@ -15,12 +15,13 @@ export async function resolveNotionPage(
   let recordMap
 
   if (rawPageId && rawPageId !== 'index') {
-    const siteMap = await getSiteMap()
-    pageId = siteMap?.canonicalPageMap[rawPageId]
+    pageId = parsePageId(rawPageId)!
 
     if (!pageId) {
       const override = pageUrlOverrides[rawPageId] || pageUrlAdditions[rawPageId]
-      if (override) pageId = parsePageId(override) ?? undefined
+      if (override) {
+        pageId = parsePageId(override)!
+      }
     }
 
     const useUriToPageIdCache = true
@@ -37,19 +38,26 @@ export async function resolveNotionPage(
 
     if (pageId) {
       recordMap = await getPage(pageId)
-
-      if (useUriToPageIdCache) {
-        try {
-          await db.set(cacheKey, pageId, cacheTTL)
-        } catch (err: any) {
-          console.warn(`redis error set "${cacheKey}"`, err.message)
-        }
-      }
     } else {
-      return {
-        error: {
-          message: `Not found "${rawPageId}"`,
-          statusCode: 404
+      const siteMap = await getSiteMap()
+      pageId = siteMap?.canonicalPageMap[rawPageId]
+
+      if (pageId) {
+        recordMap = await getPage(pageId)
+
+        if (useUriToPageIdCache) {
+          try {
+            await db.set(cacheKey, pageId, cacheTTL)
+          } catch (err: any) {
+            console.warn(`redis error set "${cacheKey}"`, err.message)
+          }
+        }
+      } else {
+        return {
+          error: {
+            message: `Not found "${rawPageId}"`,
+            statusCode: 404
+          }
         }
       }
     }

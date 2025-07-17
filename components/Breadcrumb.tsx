@@ -6,29 +6,24 @@ interface BreadcrumbProps {
   segments: string[]
 }
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ path, segments }) => {
+export function Breadcrumb({ segments, path }: BreadcrumbProps) {
   return (
-    <nav aria-label="breadcrumb">
-      <ol className="flex space-x-2 text-sm text-gray-600">
-        {segments.map((segment, idx) => {
-          const href = path[idx]
-          if (!href) return null
-
-          return (
-            <li key={idx} className="flex items-center">
-              <Link
-                href={href}
-                className="text-blue-600 hover:underline capitalize"
-              >
-                {segment.replaceAll('-', ' ')}
-              </Link>
-              {idx < segments.length - 1 && <span className="mx-2">/</span>}
-            </li>
-          )
-        })}
+    <nav aria-label="Breadcrumb" className="mb-4 text-sm">
+      <ol className="flex flex-wrap items-center space-x-1 text-gray-600">
+        {segments.map((segment, idx) => (
+          <li key={idx} className="flex items-center">
+            <Link
+              href={path[idx] ?? '#'}
+              className="text-blue-600 hover:underline capitalize"
+            >
+              {segment?.replaceAll?.('-', ' ') ?? ''}
+            </Link>
+            {idx < segments.length - 1 && (
+              <span className="mx-2 text-gray-400">/</span>
+            )}
+          </li>
+        ))}
       </ol>
     </nav>
   )
 }
-
-export default Breadcrumb
