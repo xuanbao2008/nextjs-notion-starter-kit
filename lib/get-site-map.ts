@@ -1,9 +1,10 @@
-import { getAllPagesInSpace, getPageProperty, getBlockTitle, uuidToId } from 'notion-utils'
+import { getAllPagesInSpace, getBlockTitle, getPageProperty, uuidToId } from 'notion-utils'
 import pMemoize from 'p-memoize'
 
 import type * as types from './types'
 import * as config from './config'
 import { includeNotionIdInUrls } from './config'
+import { getCanonicalPageId } from './get-canonical-page-id'
 import { notion } from './notion-api'
 
 const uuid = !!includeNotionIdInUrls
@@ -35,9 +36,12 @@ const getPage = async (pageId: string, opts?: any) => {
   })
 }
 
-// Utility to convert a string into kebab-case (URL-safe)
-const toSlug = (s?: string | null): string =>
-  s?.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-') ?? ''
+function toSlug(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '')
+}
 
 async function getAllPagesImpl(
   rootNotionPageId: string,
@@ -52,7 +56,9 @@ async function getAllPagesImpl(
     rootNotionPageId,
     rootNotionSpaceId,
     getPage,
-    { maxDepth }
+    {
+      maxDepth
+    }
   )
 
   const canonicalPageMap = Object.keys(pageMap).reduce(
@@ -62,37 +68,38 @@ async function getAllPagesImpl(
         throw new Error(`Error loading page "${pageId}"`)
       }
 
-      const block = recordMap.block[pageId]?.value
-      if (
-        !(getPageProperty<boolean | null>('Public', block!, recordMap) ?? true)
-      ) {
+      const block = recordMap.block?.[pageId]?.value
+      if (!block) {
+        return map
+      }
+
+      // Check if public
+      const isPublic = getPageProperty<boolean | null>('Public', block, recordMap)
+      if (isPublic === false) {
         return map
       }
 
       const slugProp = getPageProperty<string>('Slug', block, recordMap)
+      const category = getPageProperty<string>('Category', block, recordMap)
       const title = getBlockTitle(block, recordMap)
+
       const slug = toSlug(slugProp || title)
-      if (!slug) return map
+      const fullSlug = category ? `${toSlug(category)}/${slug}` : slug
 
-      const category = toSlug(getPageProperty<string>('Category', block, recordMap))
-      const locale = toSlug(getPageProperty<string>('Locale', block, recordMap))
-      const year = toSlug(getPageProperty<string>('Year', block, recordMap))
+      if (!slug || !fullSlug) return map
 
-      const parts = [locale, year, category, slug].filter(Boolean)
-      const fullPath = parts.join('/')
-
-      if (map[fullPath]) {
-        console.warn('Duplicate canonical path detected:', {
-          fullPath,
+      if (map[fullSlug]) {
+        console.warn('Duplicate canonical page id for slug', {
+          fullSlug,
           pageId,
-          existing: map[fullPath]
+          existingPageId: map[fullSlug]
         })
         return map
       }
 
       return {
         ...map,
-        [fullPath]: pageId
+        [fullSlug]: pageId
       }
     },
     {}
