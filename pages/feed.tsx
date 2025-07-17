@@ -35,33 +35,39 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
 
   for (const path of Object.keys(siteMap.canonicalPageMap)) {
     const pageId = siteMap.canonicalPageMap[path]
+    if (!pageId) continue
+  
     const recordMap = siteMap.pageMap[pageId]
     if (!recordMap) continue
-
+  
     const blockKeys = Object.keys(recordMap.block || {})
-    const block = blockKeys.length > 0 ? recordMap.block?.[blockKeys[0]]?.value : null
+    const block = blockKeys.length > 0 ? recordMap.block[blockKeys[0]]?.value : null
     if (!block) continue
-
+  
     const parentPage = getBlockParentPage(block, recordMap)
     const isBlogPost =
       block.type === 'page' &&
       block.parent_table === 'collection' &&
       parentPage?.id === idToUuid(config.rootNotionPageId)
+  
     if (!isBlogPost) continue
-
+  
     const title = getBlockTitle(block, recordMap) || config.name
     const description =
       getPageProperty<string>('Description', block, recordMap) || config.description
+  
     const url = getCanonicalPageUrl(config.site, recordMap)(pageId)
     const lastUpdatedTime = getPageProperty<number>('Last Updated', block, recordMap)
     const publishedTime = getPageProperty<number>('Published', block, recordMap)
+  
     const date = lastUpdatedTime
       ? new Date(lastUpdatedTime)
       : publishedTime
       ? new Date(publishedTime)
       : new Date()
+  
     const socialImageUrl = getSocialImageUrl(pageId)
-
+  
     feed.item({
       title,
       url,
@@ -74,7 +80,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
           }
         : undefined
     })
-  }
+  }  
 
   const feedText = feed.xml({ indent: true })
 
