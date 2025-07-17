@@ -1,43 +1,31 @@
 import Link from 'next/link'
 
-type Props = {
-  path: string // e.g. "en/2025/blog/my-post"
+interface Props {
+  segments: string[]
 }
 
-export const Breadcrumb = ({ path }: Props) => {
-  const segments = path.split('/').filter(Boolean)
+const Breadcrumb = ({ segments }: Props) => {
+  if (!segments?.length) return null
 
-  const buildHref = (index: number) =>
-    '/' + segments.slice(0, index + 1).join('/')
+  const path = segments.map((_, idx) => '/' + segments.slice(0, idx + 1).join('/'))
 
   return (
-    <nav aria-label="breadcrumb" className="text-sm mb-4">
-      <ol className="flex flex-wrap items-center space-x-2 text-gray-600">
-        <li>
-          <Link href="/" className="text-blue-600 hover:underline">Home</Link>
-          <span className="mx-1">/</span>
-        </li>
-        {segments.map((seg, idx) => {
-          const isLast = idx === segments.length - 1
-          const href = buildHref(idx)
-          const label = decodeURIComponent(seg).replace(/-/g, ' ')
-
-          return (
-            <li key={idx} className="inline-flex items-center">
-              {isLast ? (
-                <span className="text-gray-800 font-medium">{label}</span>
-              ) : (
-                <>
-                  <Link href={href} className="text-blue-600 hover:underline">
-                    {label}
-                  </Link>
-                  <span className="mx-1">/</span>
-                </>
-              )}
-            </li>
-          )
-        })}
+    <nav aria-label="Breadcrumb" className="my-4">
+      <ol className="flex flex-wrap items-center text-sm text-gray-500">
+        {segments.map((segment, idx) => (
+          <li key={idx} className="flex items-center">
+            <Link
+              href={path[idx]}
+              className="text-blue-600 hover:underline capitalize"
+            >
+              {segment.replaceAll('-', ' ')}
+            </Link>
+            {idx < segments.length - 1 && <span className="mx-2">/</span>}
+          </li>
+        ))}
       </ol>
     </nav>
   )
 }
+
+export default Breadcrumb

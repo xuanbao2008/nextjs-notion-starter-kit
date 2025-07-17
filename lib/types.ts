@@ -33,17 +33,12 @@ export interface Params extends ParsedUrlQuery {
 export interface Site {
   name: string
   domain: string
-
   rootNotionPageId: string
   rootNotionSpaceId: string | null
-
-  // settings
   html?: string
   fontFamily?: string
   darkMode?: boolean
   previewImages?: boolean
-
-  // opengraph metadata
   description?: string
   image?: string
 }

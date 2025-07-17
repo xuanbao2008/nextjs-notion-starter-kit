@@ -1,23 +1,21 @@
 /**
  * Site-wide app configuration.
  */
-import { parsePageId } from 'notion-utils'
 import { type PostHogConfig } from 'posthog-js'
-
-import {
-  type PageUrlOverridesInverseMap,
-  type PageUrlOverridesMap,
-  type Site,
-  type NavigationStyle
-} from './types'
+import { parsePageId } from 'notion-utils'
 
 import {
   getEnv,
   getRequiredSiteConfig,
   getSiteConfig
 } from './get-config-value'
-
 import { type NavigationLink } from './site-config'
+import {
+  type NavigationStyle,
+  type PageUrlOverridesInverseMap,
+  type PageUrlOverridesMap,
+  type Site
+} from './types'
 
 // Root Notion page setup
 export const rootNotionPageId: string = parsePageId(
