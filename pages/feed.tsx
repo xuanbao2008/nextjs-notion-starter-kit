@@ -18,7 +18,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
 
   for (const path of Object.keys(siteMap.canonicalPageMap)) {
     const pageId = siteMap.canonicalPageMap[path]
-    const recordMap = siteMap.pageMap?.[pageId]
+    const recordMap = siteMap.pageMap?.[pageId as string]
     const blockMap = recordMap?.block
 
     if (!blockMap || typeof blockMap !== 'object') continue
