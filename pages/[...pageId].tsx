@@ -20,20 +20,24 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       const block = recordMap?.block?.[pageId]?.value
       if (!block) continue
 
+      // Grab properties from Notion record
       const slugProp = getPageProperty<string>('Slug', block, recordMap)
       const title = getPageProperty<string>('title', block, recordMap)
       const categoryProp = getPageProperty<string>('Category', block, recordMap)
 
-      const slug = toSlug(slugProp || title)
+      const slug = toSlug(slugProp || title)  // fallback to title if slug is missing
       const category = toSlug(categoryProp || '')
 
-      if (
-        (category && requestedSegments.length === 2 &&
-          requestedSegments[0] === category &&
-          requestedSegments[1] === slug) ||
-        (!category && requestedSegments.length === 1 &&
-          requestedSegments[0] === slug)
-      ) {
+      const matchesTwoSegment = category &&
+        requestedSegments.length === 2 &&
+        requestedSegments[0] === category &&
+        requestedSegments[1] === slug
+
+      const matchesOneSegment = !category &&
+        requestedSegments.length === 1 &&
+        requestedSegments[0] === slug
+
+      if (matchesTwoSegment || matchesOneSegment) {
         const props = await resolveNotionPage(domain, pageId)
         return { props }
       }
