@@ -19,10 +19,13 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   for (const path of Object.keys(siteMap.canonicalPageMap)) {
     const pageId = siteMap.canonicalPageMap[path]
     const recordMap = siteMap.pageMap?.[pageId]
-    if (!recordMap) continue
+    const blockMap = recordMap?.block
 
-    const keys = Object.keys(recordMap.block || {})
-    const block = keys.length > 0 ? recordMap.block?.[keys[0]]?.value : null
+    if (!blockMap || typeof blockMap !== 'object') continue
+
+    const firstBlockId = Object.keys(blockMap)[0]
+    const block = blockMap[firstBlockId]?.value
+
     if (!block) continue
 
     const parentPage = getBlockParentPage(block, recordMap)
