@@ -199,7 +199,7 @@ export function NotionPage({
       {isLiteMode && <BodyClassName className='notion-lite' />}
       {isDarkMode && <BodyClassName className='dark-mode' />}
 
-      {breadcrumbs.length > 0 && <Breadcrumb path={breadcrumbs.map((b) => b.path)} />}
+      {breadcrumbs.length > 0 && <Breadcrumb path={breadcrumbs.map((b) => b.path)} segments={breadcrumbs.map((b) => b.name)}/>}
 
       <NotionRenderer
         bodyClassName={cs(
