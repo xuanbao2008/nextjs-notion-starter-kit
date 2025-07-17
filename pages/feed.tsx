@@ -38,7 +38,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
       title,
       guid: pageId,
       url,
-      date: block.created_time
+      date: new Date(block.created_time)
     })
   }
 
