@@ -61,3 +61,21 @@ export interface NotionPageInfo {
   authorImage?: string
   detail?: string
 }
+export interface SearchParams {
+  query: string
+  limit?: number
+  filters?: {
+    slug?: string
+    category?: string
+  }
+}
+
+export interface SearchResults {
+  results: Array<{
+    id: string
+    title: string
+    slug?: string
+    category?: string
+    [key: string]: any
+  }>
+}
