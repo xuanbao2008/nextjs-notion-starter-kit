@@ -1,31 +1,15 @@
+'use client'
+
 import cs from 'classnames'
 import dynamic from 'next/dynamic'
 import Image from 'next/legacy/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { type PageBlock } from 'notion-types'
-import {
-  formatDate,
-  getBlockTitle,
-  getPageProperty,
-  parsePageId
-} from 'notion-utils'
+import { getBlockTitle, getPageProperty, parsePageId } from 'notion-utils'
 import * as React from 'react'
 import BodyClassName from 'react-body-classname'
-import {
-  type NotionComponents,
-  NotionRenderer,
-  useNotionContext
-} from 'react-notion-x'
-import { EmbeddedTweet, TweetNotFound, TweetSkeleton } from 'react-tweet'
+import { NotionRenderer, useNotionContext } from 'react-notion-x'
 import { useSearchParam } from 'react-use'
-
-import type * as types from '@/lib/types'
-import * as config from '@/lib/config'
-import { mapImageUrl } from '@/lib/map-image-url'
-import { mapPageUrl } from '@/lib/map-page-url'
-import { searchNotion } from '@/lib/search-notion'
-import { useDarkMode } from '@/lib/use-dark-mode'
 
 import { Breadcrumb } from './Breadcrumb'
 import { Footer } from './Footer'
@@ -34,16 +18,20 @@ import { NotionPageHeader } from './NotionPageHeader'
 import { Page404 } from './Page404'
 import { PageAside } from './PageAside'
 import { PageHead } from './PageHead'
-import styles from './styles.module.css'
+import { mapImageUrl } from '@/lib/map-image-url'
+import { getCanonicalPageUrl, mapPageUrl } from '@/lib/map-page-url'
+import { searchNotion } from '@/lib/search-notion'
+import { useDarkMode } from '@/lib/use-dark-mode'
+import * as config from '@/lib/config'
+import type * as types from '@/lib/types'
 
-// Dynamic Imports
 const Code = dynamic(() =>
   import('react-notion-x/build/third-party/code').then(async (m) => {
     await Promise.allSettled([
-      import('prismjs/components/prism-js-templates'),
-      import('prismjs/components/prism-bash'),
-      import('prismjs/components/prism-typescript'),
-      import('prismjs/components/prism-json')
+      import('prismjs/components/prism-bash.js'),
+      import('prismjs/components/prism-js-templates.js'),
+      import('prismjs/components/prism-typescript.js'),
+      import('prismjs/components/prism-json.js')
     ])
     return m.Code
   })
@@ -53,133 +41,56 @@ const Collection = dynamic(() =>
   import('react-notion-x/build/third-party/collection').then((m) => m.Collection)
 )
 
-const Modal = dynamic(
-  () =>
-    import('react-notion-x/build/third-party/modal').then((m) => {
-      m.Modal.setAppElement('.notion-viewport')
-      return m.Modal
-    }),
-  { ssr: false }
+const Modal = dynamic(() =>
+  import('react-notion-x/build/third-party/modal').then((m) => {
+    m.Modal.setAppElement('.notion-viewport')
+    return m.Modal
+  }), { ssr: false }
 )
 
-const HeroHeader = dynamic<{ className?: string }>(
-  () => import('./HeroHeader').then((m) => m.HeroHeader),
-  { ssr: false }
-)
+export function NotionPage(props: types.PageProps) {
+  const { site, recordMap, pageId, error } = props
 
-function Tweet({ id }: { id: string }) {
-  const { recordMap } = useNotionContext()
-  const tweet = (recordMap as types.ExtendedTweetRecordMap)?.tweets?.[id]
-
-  return (
-    <React.Suspense fallback={<TweetSkeleton />}>
-      {tweet ? <EmbeddedTweet tweet={tweet} /> : <TweetNotFound />}
-    </React.Suspense>
-  )
-}
-
-// Custom Property Display Hooks
-const propertyLastEditedTimeValue = ({ block, pageHeader }: any, defaultFn: () => React.ReactNode) => {
-  if (pageHeader && block?.last_edited_time) {
-    return `Last updated ${formatDate(block?.last_edited_time, { month: 'long' })}`
-  }
-  return defaultFn()
-}
-
-const propertyDateValue = ({ data, schema, pageHeader }: any, defaultFn: () => React.ReactNode) => {
-  if (pageHeader && schema?.name?.toLowerCase() === 'published') {
-    const publishDate = data?.[0]?.[1]?.[0]?.[1]?.start_date
-    if (publishDate) {
-      return `${formatDate(publishDate, { month: 'long' })}`
-    }
-  }
-  return defaultFn()
-}
-
-const propertyTextValue = ({ schema, pageHeader }: any, defaultFn: () => React.ReactNode) => {
-  if (pageHeader && schema?.name?.toLowerCase() === 'author') {
-    return <b>{defaultFn()}</b>
-  }
-  return defaultFn()
-}
-
-// -----------------------------------------------------------------------------
-// Main NotionPage Component
-// -----------------------------------------------------------------------------
-
-export function NotionPage({
-  site,
-  breadcrumbs = [],
-  recordMap,
-  error,
-  pageId,
-  tagsPage,
-  propertyToFilterName
-}: types.PageProps & { breadcrumbs?: { name: string; path: string }[] }) {
   const router = useRouter()
   const lite = useSearchParam('lite')
   const isLiteMode = lite === 'true'
   const { isDarkMode } = useDarkMode()
 
-  const components = React.useMemo<Partial<NotionComponents>>(
-    () => ({
-      nextLegacyImage: Image,
-      nextLink: Link,
-      Code,
-      Collection,
-      Modal,
-      Tweet,
-      Header: NotionPageHeader,
-      propertyLastEditedTimeValue,
-      propertyTextValue,
-      propertyDateValue
-    }),
-    []
-  )
-
-  const siteMapPageUrl = React.useMemo(() => {
-    const params: any = {}
-    if (lite) params.lite = lite
-
-    const searchParams = new URLSearchParams(params)
-    return site ? mapPageUrl(site, recordMap!, searchParams) : undefined
-  }, [site, recordMap, lite])
-
-  const keys = Object.keys(recordMap?.block || {})
-  const block = recordMap?.block?.[keys[0]!]?.value
-  const isBlogPost = block?.type === 'page' && block?.parent_table === 'collection'
-  const isBioPage = parsePageId(block?.id) === parsePageId('9c131551696645d681f44d97b2334924') // replace by my own about page
-
-  const pageAside = React.useMemo(() => {
-    return <PageAside block={block!} recordMap={recordMap!} isBlogPost={isBlogPost} />
-  }, [block, recordMap, isBlogPost])
-
-  const pageCover = isBioPage ? (
-    <HeroHeader className='notion-page-cover-wrapper notion-page-cover-hero' />
-  ) : null
-
   if (router.isFallback) return <Loading />
-  if (error || !site || !block) {
+  if (error || !site || !recordMap || !pageId) {
     return <Page404 site={site} pageId={pageId} error={error} />
   }
 
+  const keys = Object.keys(recordMap.block || {})
+  const block = recordMap.block?.[keys[0] || '']?.value
+  if (!block) return <Page404 site={site} pageId={pageId} error={error} />
+
+  const getProp = (name: string) =>
+    getPageProperty<string>(name, block, recordMap) || ''
+
+  const category = getProp('Category')?.trim().toLowerCase().replace(/\s+/g, '-')
+  const slug = getProp('Slug')?.trim().toLowerCase().replace(/\s+/g, '-') || 
+               getProp('title')?.trim().toLowerCase().replace(/\s+/g, '-')
+
+  const breadcrumbs = []
+  if (category) breadcrumbs.push({ name: category, path: `/${category}` })
+  breadcrumbs.push({
+    name: slug,
+    path: category ? `/${category}/${slug}` : `/${slug}`
+  })
+
   const name = getBlockTitle(block, recordMap) || site.name
-  const title = tagsPage && propertyToFilterName ? `${propertyToFilterName} ${name}` : name
+  const title = props.tagsPage && props.propertyToFilterName ? `${props.propertyToFilterName} ${name}` : name
 
-  if (!config.isServer) {
-    const g = window as any
-    g.pageId = pageId
-    g.recordMap = recordMap
-    g.block = block
-  }
+  const canonicalPageUrl = config.isDev
+    ? undefined
+    : getCanonicalPageUrl(site, props.recordMap)(pageId)
 
-  // const canonicalPageUrl = config.isDev ? undefined : getCanonicalPageUrl(site, recordMap)(pageId)
-  const canonicalPageUrl = config.isDev ? undefined : `https://${site.domain}${breadcrumbs?.[breadcrumbs.length - 1]?.path || ''}`
-
+    
   const socialImage = mapImageUrl(
     getPageProperty<string>('Social Image', block, recordMap) ||
-      (block as PageBlock).format?.page_cover ||
-      config.defaultPageCover,
+    block?.format?.page_cover ||
+    config.defaultPageCover,
     block
   )
 
@@ -197,38 +108,40 @@ export function NotionPage({
         url={canonicalPageUrl}
       />
 
+      {breadcrumbs.length > 0 && (
+        <Breadcrumb
+          path={breadcrumbs.map((b) => b.path)}
+          segments={breadcrumbs.map((b) => b.name)}
+        />
+      )}
+
       {isLiteMode && <BodyClassName className='notion-lite' />}
       {isDarkMode && <BodyClassName className='dark-mode' />}
 
-      {breadcrumbs.length > 0 && <Breadcrumb path={breadcrumbs.map((b) => b.path)} segments={breadcrumbs.map((b) => b.name)}/>}
-
       <NotionRenderer
-        bodyClassName={cs(
-          styles.notion,
-          pageId === site.rootNotionPageId && 'index-page',
-          tagsPage && 'tags-page'
-        )}
+        bodyClassName={cs('notion', pageId === site.rootNotionPageId && 'index-page')}
         darkMode={isDarkMode}
-        components={components}
+        components={{
+          nextImage: Image,
+          nextLink: Link,
+          Code,
+          Collection,
+          Modal,
+          Header: NotionPageHeader
+        }}
         recordMap={recordMap}
         rootPageId={site.rootNotionPageId}
         rootDomain={site.domain}
         fullPage={!isLiteMode}
-        previewImages={!!recordMap?.preview_images}
+        previewImages={!!recordMap.preview_images}
         showCollectionViewDropdown={false}
-        showTableOfContents={!!isBlogPost}
-        minTableOfContentsItems={3}
-        defaultPageIcon={config.defaultPageIcon}
-        defaultPageCover={config.defaultPageCover}
-        defaultPageCoverPosition={config.defaultPageCoverPosition}
-        linkTableTitleProperties={false}
-        mapPageUrl={siteMapPageUrl}
+        showTableOfContents
+        mapPageUrl={mapPageUrl(site, recordMap)}
         mapImageUrl={mapImageUrl}
         searchNotion={config.isSearchEnabled ? searchNotion : undefined}
-        pageAside={pageAside}
+        pageAside={<PageAside block={block} recordMap={recordMap} isBlogPost />}
         footer={<Footer />}
-        pageTitle={tagsPage && propertyToFilterName ? title : undefined}
-        pageCover={pageCover}
+        pageTitle={title}
       />
     </>
   )

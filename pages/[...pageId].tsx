@@ -23,20 +23,14 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       const title = getPageProperty<string>('title', block, recordMap)
       const categoryProp = getPageProperty<string>('Category', block, recordMap)
 
-      const slug = toSlug(slugProp || title)
+      const slug = toSlug(slugProp || title || '')
       const category = toSlug(categoryProp || '')
 
-      // Handles paths like 'category/slug' or just 'slug'
       const fullSlug = category ? `${category}/${slug}` : slug
 
       if (fullSlug === requestedPath) {
         const props = await resolveNotionPage(domain, pageId)
-
-        const breadcrumbs = []
-        if (category) breadcrumbs.push({ name: category, path: `/${category}` })
-        if (slug) breadcrumbs.push({ name: slug, path: category ? `/${category}/${slug}` : `/${slug}` })
-
-        return { props: { ...props, breadcrumbs } }
+        return { props }
       }
     }
 
@@ -48,5 +42,26 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
 }
 
 export default function NotionDomainDynamicPage(props: PageProps) {
-  return <NotionPage {...props} />
+  if (!props.recordMap || !props.pageId) {
+    return <NotionPage {...props} />
+  }
+
+  const recordMap = props.recordMap
+  const block = recordMap.block?.[props.pageId]?.value
+
+  const getProp = (name: string) =>
+    block ? getPageProperty<string>(name, block, recordMap) ?? '' : ''
+
+  const category = toSlug(getProp('Category'))
+  const slug = toSlug(getProp('Slug') || getProp('title'))
+
+  const breadcrumbs = []
+  if (category) {
+    breadcrumbs.push({ name: category, path: `/${category}` })
+    breadcrumbs.push({ name: slug, path: `/${category}/${slug}` })
+  } else {
+    breadcrumbs.push({ name: slug, path: `/${slug}` })
+  }
+
+  return <NotionPage {...props} breadcrumbs={breadcrumbs} />
 }

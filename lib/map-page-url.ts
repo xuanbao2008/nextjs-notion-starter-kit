@@ -1,43 +1,26 @@
+import { toSlug } from './to-slug'
 import { type ExtendedRecordMap } from 'notion-types'
-import { parsePageId, uuidToId } from 'notion-utils'
+import type { Site } from './types'
 
-import { includeNotionIdInUrls } from './config'
-import { getCanonicalPageId } from './get-canonical-page-id'
-import { type Site } from './types'
+export const mapPageUrl = (
+  site: Site,
+  recordMap: ExtendedRecordMap,
+  searchParams?: URLSearchParams
+) => (pageId = '') => {
+  const block = recordMap.block?.[pageId]?.value
+  if (!block) return `/`
 
-// include UUIDs in page URLs during local development but not in production
-// (they're nice for debugging and speed up local dev)
-const uuid = !!includeNotionIdInUrls
+  const slug = toSlug(block.properties?.Slug?.[0]?.[0] || block.properties?.title?.[0]?.[0])
+  const category = toSlug(block.properties?.Category?.[0]?.[0] || '')
 
-export const mapPageUrl =
-  (site: Site, recordMap: ExtendedRecordMap, searchParams: URLSearchParams) =>
-  (pageId = '') => {
-    const pageUuid = parsePageId(pageId, { uuid: true })!
+  const pathname = category ? `/${category}/${slug}` : `/${slug}`
+  return searchParams ? `${pathname}?${searchParams.toString()}` : pathname
+}
 
-    if (uuidToId(pageUuid) === site.rootNotionPageId) {
-      return createUrl('/', searchParams)
-    } else {
-      return createUrl(
-        `/${getCanonicalPageId(pageUuid, recordMap, { uuid })}`,
-        searchParams
-      )
-    }
-  }
-
-export const getCanonicalPageUrl =
-  (site: Site, recordMap: ExtendedRecordMap) =>
-  (pageId = '') => {
-    const pageUuid = parsePageId(pageId, { uuid: true })!
-
-    if (uuidToId(pageId) === site.rootNotionPageId) {
-      return `https://${site.domain}`
-    } else {
-      return `https://${site.domain}/${getCanonicalPageId(pageUuid, recordMap, {
-        uuid
-      })}`
-    }
-  }
-
-function createUrl(path: string, searchParams: URLSearchParams) {
-  return [path, searchParams.toString()].filter(Boolean).join('?')
+export const getCanonicalPageUrl = (
+  site: Site,
+  recordMap: ExtendedRecordMap
+) => (pageId = '') => {
+  const baseUrl = `https://${site.domain}`
+  return baseUrl + mapPageUrl(site, recordMap)(pageId)
 }

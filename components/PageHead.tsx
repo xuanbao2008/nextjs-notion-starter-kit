@@ -19,10 +19,9 @@ export function PageHead({
 }) {
   const rssFeedUrl = `${config.host}/feed`
 
-  title = title ?? site?.name
-  description = description ?? site?.description
-
-  const socialImageUrl = getSocialImageUrl(pageId) || image
+  const resolvedTitle = title ?? site?.name ?? config.name
+  const resolvedDescription = description ?? site?.description ?? config.description
+  const socialImageUrl = getSocialImageUrl(pageId) || image || config.defaultPageCover
 
   return (
     <Head>
@@ -52,22 +51,18 @@ export function PageHead({
       <meta name='robots' content='index,follow' />
       <meta property='og:type' content='website' />
 
-      {site && (
-        <>
-          <meta property='og:site_name' content={site.name} />
-          <meta property='twitter:domain' content={site.domain} />
-        </>
-      )}
+      {site?.name && <meta property='og:site_name' content={site.name} />}
+      {site?.domain && <meta property='twitter:domain' content={site.domain} />}
 
       {config.twitter && (
         <meta name='twitter:creator' content={`@${config.twitter}`} />
       )}
 
-      {description && (
+      {resolvedDescription && (
         <>
-          <meta name='description' content={description} />
-          <meta property='og:description' content={description} />
-          <meta name='twitter:description' content={description} />
+          <meta name='description' content={resolvedDescription} />
+          <meta property='og:description' content={resolvedDescription} />
+          <meta name='twitter:description' content={resolvedDescription} />
         </>
       )}
 
@@ -93,13 +88,13 @@ export function PageHead({
         rel='alternate'
         type='application/rss+xml'
         href={rssFeedUrl}
-        title={site?.name}
+        title={site?.name ?? config.name}
       />
       <meta name='follow.it-verification-code' content='c0A1rAARM3FC2XRfMAke' />
 
-      <meta property='og:title' content={title} />
-      <meta name='twitter:title' content={title} />
-      <title>{title}</title>
+      <meta property='og:title' content={resolvedTitle} />
+      <meta name='twitter:title' content={resolvedTitle} />
+      <title>{resolvedTitle}</title>
     </Head>
   )
 }
