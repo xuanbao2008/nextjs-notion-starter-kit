@@ -9,7 +9,11 @@ import siteConfig from 'site.config'
  * and builds mapping from slugs to page IDs.
  */
 export async function getSiteMap(): Promise<SiteMap> {
-  const rawSiteMap = await getAllPagesInSpace(rootNotionPageId, rootNotionSpaceId)
+  const rawSiteMap = await getAllPagesInSpace(rootNotionPageId, rootNotionSpaceId, {
+    // default config — adjust as needed
+    includeCollections: false,
+    limit: 1000
+  })
 
   const canonicalPageMap: SiteMap['canonicalPageMap'] = {}
   const pageMap: SiteMap['pageMap'] = rawSiteMap as SiteMap['pageMap']
