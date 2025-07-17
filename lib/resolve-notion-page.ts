@@ -2,8 +2,8 @@ import { parsePageId } from 'notion-utils'
 
 import * as acl from './acl'
 import { environment, pageUrlAdditions, pageUrlOverrides, site } from './config'
-import { db } from './db'
 import { getSiteMap } from './get-site-map'
+import { db } from './db'
 import { getPage } from './notion'
 import type { PageProps } from './types'
 

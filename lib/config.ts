@@ -10,7 +10,6 @@ import { type NavigationLink } from './site-config'
 import {
   type NavigationStyle,
   type PageUrlOverridesInverseMap,
-  type PageUrlOverridesMap,
   type Site
 } from './types'
 

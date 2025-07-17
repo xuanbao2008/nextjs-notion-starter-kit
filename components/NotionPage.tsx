@@ -67,7 +67,7 @@ const HeroHeader = dynamic<{ className?: string }>(
   { ssr: false }
 )
 
-const Tweet = ({ id }: { id: string }) => {
+function Tweet({ id }: { id: string }) {
   const { recordMap } = useNotionContext()
   const tweet = (recordMap as types.ExtendedTweetRecordMap)?.tweets?.[id]
 
