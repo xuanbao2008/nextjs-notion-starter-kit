@@ -3,6 +3,7 @@ import { pageUrlOverrides, pageUrlAdditions, rootNotionPageId, rootNotionSpaceId
 import { toSlug } from './to-slug'
 import type { SiteMap } from './types'
 import siteConfig from 'site.config'
+import { notion } from './notion-api'
 
 /**
  * Gets a site map of all pages in the workspace (rootNotionSpaceId)
@@ -12,11 +13,8 @@ export async function getSiteMap(): Promise<SiteMap> {
   const rawSiteMap = await getAllPagesInSpace(
     rootNotionPageId,
     rootNotionSpaceId || undefined,
-    {
-      includeCollections: false,
-      limit: 1000
-    }
-  )  
+    notion.getPage
+  )
 
   const canonicalPageMap: SiteMap['canonicalPageMap'] = {}
   const pageMap: SiteMap['pageMap'] = rawSiteMap as SiteMap['pageMap']
