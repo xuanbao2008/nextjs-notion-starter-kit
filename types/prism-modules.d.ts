@@ -1,4 +1,4 @@
-declare module 'prismjs/components/prism-js-templates';
-declare module 'prismjs/components/prism-bash';
-declare module 'prismjs/components/prism-typescript';
-declare module 'prismjs/components/prism-json';
+declare module 'prismjs/components/prism-bash.js'
+declare module 'prismjs/components/prism-js-templates.js'
+declare module 'prismjs/components/prism-typescript.js'
+declare module 'prismjs/components/prism-json.js'
