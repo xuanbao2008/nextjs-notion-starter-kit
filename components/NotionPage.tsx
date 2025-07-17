@@ -82,10 +82,9 @@ export function NotionPage(props: types.PageProps) {
   const name = getBlockTitle(block, recordMap) || site.name
   const title = props.tagsPage && props.propertyToFilterName ? `${props.propertyToFilterName} ${name}` : name
 
-  const canonicalPageUrl = config.isDev
+  const canonicalPageUrl = config.isDev || !props.recordMap
     ? undefined
     : getCanonicalPageUrl(site, props.recordMap)(pageId)
-
     
   const socialImage = mapImageUrl(
     getPageProperty<string>('Social Image', block, recordMap) ||
