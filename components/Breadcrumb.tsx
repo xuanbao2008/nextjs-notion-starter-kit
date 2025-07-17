@@ -1,28 +1,31 @@
 import Link from 'next/link'
+import React from 'react'
 
-interface Props {
+interface BreadcrumbProps {
+  path: string[]
   segments: string[]
 }
 
-const Breadcrumb = ({ segments }: Props) => {
-  if (!segments?.length) return null
-
-  const path = segments.map((_, idx) => '/' + segments.slice(0, idx + 1).join('/'))
-
+const Breadcrumb: React.FC<BreadcrumbProps> = ({ path, segments }) => {
   return (
-    <nav aria-label="Breadcrumb" className="my-4">
-      <ol className="flex flex-wrap items-center text-sm text-gray-500">
-        {segments.map((segment, idx) => (
-          <li key={idx} className="flex items-center">
-            <Link
-              href={path[idx]}
-              className="text-blue-600 hover:underline capitalize"
-            >
-              {segment.replaceAll('-', ' ')}
-            </Link>
-            {idx < segments.length - 1 && <span className="mx-2">/</span>}
-          </li>
-        ))}
+    <nav aria-label="breadcrumb">
+      <ol className="flex space-x-2 text-sm text-gray-600">
+        {segments.map((segment, idx) => {
+          const href = path[idx]
+          if (!href) return null
+
+          return (
+            <li key={idx} className="flex items-center">
+              <Link
+                href={href}
+                className="text-blue-600 hover:underline capitalize"
+              >
+                {segment.replaceAll('-', ' ')}
+              </Link>
+              {idx < segments.length - 1 && <span className="mx-2">/</span>}
+            </li>
+          )
+        })}
       </ol>
     </nav>
   )
