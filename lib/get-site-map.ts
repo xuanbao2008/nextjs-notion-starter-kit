@@ -1,20 +1,21 @@
-import { getAllPagesInSpace, getBlockTitle, getPageProperty, uuidToId } from 'notion-utils'
+import { getAllPagesInSpace, getPageProperty, getBlockTitle, uuidToId } from 'notion-utils'
 import pMemoize from 'p-memoize'
 
 import * as config from './config'
 import { toSlug } from './to-slug'
 import { notion } from './notion-api'
-import type { SiteMap } from './types'
+import type { SiteMap, PageMap, CanonicalPageMap } from './types'
 
 export async function getSiteMap(): Promise<SiteMap> {
-  const partialSiteMap = await getAllPages(
+  const { pageMap, canonicalPageMap } = await getAllPages(
     config.rootNotionPageId,
     config.rootNotionSpaceId ?? undefined
   )
 
   return {
     site: config.site,
-    ...partialSiteMap
+    pageMap,
+    canonicalPageMap
   }
 }
 
@@ -41,45 +42,45 @@ async function getAllPagesImpl(
   }: {
     maxDepth?: number
   } = {}
-): Promise<Partial<SiteMap>> {
+): Promise<{ pageMap: PageMap; canonicalPageMap: CanonicalPageMap }> {
   const pageMap = await getAllPagesInSpace(
     rootNotionPageId,
     rootNotionSpaceId,
     getPage,
-    { maxDepth }
+    {
+      maxDepth
+    }
   )
 
-  const canonicalPageMap = Object.entries(pageMap).reduce((map, [pageId, recordMap]) => {
-    const block = recordMap?.block?.[pageId]?.value
-    if (!block) return map
+  const canonicalPageMap: CanonicalPageMap = {}
+
+  for (const pageId of Object.keys(pageMap)) {
+    const recordMap = pageMap[pageId]
+    if (!recordMap) {
+      throw new Error(`Error loading page "${pageId}"`)
+    }
+
+    const block = recordMap.block?.[pageId]?.value
+    if (!block) continue
 
     const isPublic = getPageProperty<boolean | null>('Public', block, recordMap) ?? true
-    if (!isPublic) return map
+    if (!isPublic) continue
 
-    const categoryProp = getPageProperty<string>('Category', block, recordMap)
     const slugProp = getPageProperty<string>('Slug', block, recordMap)
+    const category = getPageProperty<string>('Category', block, recordMap)
     const title = getBlockTitle(block, recordMap)
 
     const slug = toSlug(slugProp || title)
-    if (!slug) return map
+    if (!slug) continue
 
-    const category = toSlug(categoryProp)
-    const fullSlug = category ? `${category}/${slug}` : slug
+    const fullPath = category ? `${category}/${slug}` : slug
 
-    if (map[fullSlug]) {
-      console.warn('Duplicate canonical slug detected:', {
-        fullSlug,
-        pageId,
-        existingPageId: map[fullSlug]
-      })
-      return map
+    if (canonicalPageMap[fullPath]) {
+      console.warn('⚠ Duplicate slug detected:', { fullPath, pageId })
     }
 
-    return {
-      ...map,
-      [fullSlug]: pageId
-    }
-  }, {} as Record<string, string>)
+    canonicalPageMap[fullPath] = pageId
+  }
 
   return {
     pageMap,
