@@ -3,25 +3,21 @@
  */
 import { parsePageId } from 'notion-utils'
 import { type PostHogConfig } from 'posthog-js'
+
 import {
   type PageUrlOverridesInverseMap,
   type PageUrlOverridesMap,
-  type Site
+  type Site,
+  type NavigationStyle
 } from './types'
-
 
 import {
   getEnv,
   getRequiredSiteConfig,
   getSiteConfig
 } from './get-config-value'
+
 import { type NavigationLink } from './site-config'
-import {
-  type NavigationStyle,
-  type PageUrlOverridesInverseMap,
-  type PageUrlOverridesMap,
-  type Site
-} from './types'
 
 // Root Notion page setup
 export const rootNotionPageId: string = parsePageId(
@@ -38,9 +34,8 @@ export const rootNotionSpaceId: string | null =
   parsePageId(getSiteConfig('rootNotionSpaceId'), { uuid: true }) ?? null
 
 // --- OVERRIDES DISABLED: Slug/Category logic is used instead
-export const pageUrlOverrides = {}
-export const pageUrlAdditions = {}
-
+export const pageUrlOverrides: PageUrlOverridesMap = {}
+export const pageUrlAdditions: PageUrlOverridesMap = {}
 export const inversePageUrlOverrides: PageUrlOverridesInverseMap = {}
 
 // Env and site basics
@@ -95,6 +90,7 @@ export const navigationStyle: NavigationStyle = getSiteConfig(
   'navigationStyle',
   'default'
 )
+
 export const navigationLinks: Array<NavigationLink | undefined> = getSiteConfig(
   'navigationLinks',
   null
