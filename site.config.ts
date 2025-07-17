@@ -10,7 +10,7 @@ export default siteConfig({
 
   // basic site info (required)
   name: 'iine',
-  domain: 'iine.jp',
+  domain: 'nextjs-notion-starter-kit-git-dev-xuanbao2008s-projects.vercel.app',
   author: 'Bao Doan',
 
   // open graph metadata (optional)
