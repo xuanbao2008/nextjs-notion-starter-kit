@@ -1,11 +1,11 @@
 import { type GetServerSideProps } from 'next'
+import { getPageProperty } from 'notion-utils'
 
 import { NotionPage } from '@/components/NotionPage'
 import { domain } from '@/lib/config'
-import { toSlug } from '@/lib/to-slug'
-import { resolveNotionPage } from '@/lib/resolve-notion-page'
 import { getSiteMap } from '@/lib/get-site-map'
-import { getPageProperty } from 'notion-utils'
+import { resolveNotionPage } from '@/lib/resolve-notion-page'
+import { toSlug } from '@/lib/to-slug'
 import { type PageProps } from '@/lib/types'
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async (context) => {

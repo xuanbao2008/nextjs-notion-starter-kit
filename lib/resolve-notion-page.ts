@@ -1,11 +1,11 @@
 import { parsePageId } from 'notion-utils'
 
+import type { PageProps } from './types'
 import * as acl from './acl'
 import { environment, pageUrlAdditions, pageUrlOverrides, site } from './config'
-import { getSiteMap } from './get-site-map'
 import { db } from './db'
+import { getSiteMap } from './get-site-map'
 import { getPage } from './notion'
-import type { PageProps } from './types'
 
 export async function resolveNotionPage(
   domain: string,

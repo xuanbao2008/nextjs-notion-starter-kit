@@ -1,7 +1,8 @@
-import pMemoize from 'p-memoize'
-import ExpiryMap from 'expiry-map'
-import { api } from './config'
 import type { SearchParams, SearchResults } from 'notion-types'
+import ExpiryMap from 'expiry-map'
+import pMemoize from 'p-memoize'
+
+import { api } from './config'
 
 export const searchNotion = pMemoize(searchNotionImpl, {
   cacheKey: (args) => args[0]?.query,

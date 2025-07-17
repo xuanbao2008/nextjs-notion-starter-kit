@@ -39,6 +39,7 @@
     "expiry-map": "^2.0.0",
     "fathom-client": "^3.4.1",
     "ky": "^1.8.1",
+    "lint": "^0.8.19",
     "lodash.omit": "^4.5.0",
     "lqip-modern": "^2.2.1",
     "next": "^15.3.3",

@@ -1,5 +1,5 @@
-import { getPageProperty } from 'notion-utils'
 import type { Block, ExtendedRecordMap } from 'notion-types'
+import { getPageProperty } from 'notion-utils'
 
 export function getPageTweet(
   block: Block,

@@ -1,10 +1,10 @@
 import { getAllPagesInSpace, getBlockTitle, getPageProperty } from 'notion-utils'
 import pMemoize from 'p-memoize'
 
-import * as config from './config'
-import { toSlug } from './to-slug'
-import { notion } from './notion-api'
 import type { SiteMap } from './types'
+import * as config from './config'
+import { notion } from './notion-api'
+import { toSlug } from './to-slug'
 
 export async function getSiteMap(): Promise<SiteMap> {
   const partialSiteMap = await getAllPages(
