@@ -1,6 +1,6 @@
-import { type NextApiRequest, type NextApiResponse } from 'next'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import type { SearchParams } from 'notion-types'
 
-import type * as types from '../../lib/types'
 import { search } from '../../lib/notion'
 
 export default async function searchNotion(
@@ -11,7 +11,7 @@ export default async function searchNotion(
     return res.status(405).send({ error: 'method not allowed' })
   }
 
-  const searchParams: types.SearchParams = req.body
+  const searchParams: SearchParams = req.body
 
   console.log('<<< lambda search-notion', searchParams)
   const results = await search(searchParams)
