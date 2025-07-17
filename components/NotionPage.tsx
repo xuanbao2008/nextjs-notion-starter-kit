@@ -148,7 +148,7 @@ export function NotionPage({
   const keys = Object.keys(recordMap?.block || {})
   const block = recordMap?.block?.[keys[0]!]?.value
   const isBlogPost = block?.type === 'page' && block?.parent_table === 'collection'
-  const isBioPage = parsePageId(block?.id) === parsePageId('8d0062776d0c4afca96eb1ace93a7538')
+  const isBioPage = parsePageId(block?.id) === parsePageId('9c131551696645d681f44d97b2334924') // replace by my own about page
 
   const pageAside = React.useMemo(() => {
     return <PageAside block={block!} recordMap={recordMap!} isBlogPost={isBlogPost} />
@@ -173,7 +173,8 @@ export function NotionPage({
     g.block = block
   }
 
-  const canonicalPageUrl = config.isDev ? undefined : getCanonicalPageUrl(site, recordMap)(pageId)
+  // const canonicalPageUrl = config.isDev ? undefined : getCanonicalPageUrl(site, recordMap)(pageId)
+  const canonicalPageUrl = config.isDev ? undefined : `${site?.domain?.startsWith('http') ? '' : 'https://'}${site?.domain}/${breadcrumbs?.map(b => b.name).join('/')}`
 
   const socialImage = mapImageUrl(
     getPageProperty<string>('Social Image', block, recordMap) ||

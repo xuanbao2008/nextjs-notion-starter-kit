@@ -23,7 +23,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       const title = getPageProperty<string>('title', block, recordMap)
       const categoryProp = getPageProperty<string>('Category', block, recordMap)
 
-      const slug = toSlug(slugProp || title)
+      const slug = toSlug(slugProp || title || '')
       const category = toSlug(categoryProp || '')
 
       const fullSlug = category ? `${category}/${slug}` : slug
@@ -57,8 +57,14 @@ export default function NotionDomainDynamicPage(props: PageProps) {
   const slug = toSlug(getProp('Slug') || getProp('title'))
 
   const breadcrumbs = []
-  if (category) breadcrumbs.push({ name: category, path: `/${category}` })
-  if (slug) breadcrumbs.push({ name: slug, path: `/${category}/${slug}` })
+  if (category) {
+    breadcrumbs.push({ name: category, path: `/${category}` })
+    if (slug) {
+      breadcrumbs.push({ name: slug, path: `/${category}/${slug}` })
+    }
+  } else if (slug) {
+    breadcrumbs.push({ name: slug, path: `/${slug}` })
+  }
 
   return <NotionPage {...props} breadcrumbs={breadcrumbs} />
 }
