@@ -18,10 +18,10 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   try {
     const siteMap = await getSiteMap()
 
-    for (const [pageId, recordMap] of Object.entries(siteMap.pageMap)) {
-      if (!recordMap) continue
+    for (const [pageIdKey, recordMap] of Object.entries(siteMap.pageMap)) {
+      if (!recordMap || !recordMap.block) continue
     
-      const block = recordMap.block?.[pageId]?.value
+      const block = recordMap.block[pageIdKey]?.value
       if (!block) continue
     
       const slug = getPageProperty<string>('Slug', block, recordMap)?.trim()
@@ -32,7 +32,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       const fullSlug = category ? `${category}/${path}` : path
     
       if (fullSlug && fullSlug === requestedPath) {
-        const props = await resolveNotionPage(domain, pageId)
+        const props = await resolveNotionPage(domain, pageIdKey)
         return { props }
       }
     }    
