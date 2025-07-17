@@ -36,6 +36,7 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
 
     feed.item({
       title,
+      description: title,
       guid: pageId,
       url,
       date: new Date(block.created_time)
