@@ -24,8 +24,8 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
     if (!blockMap || typeof blockMap !== 'object') continue
 
     const firstBlockId = Object.keys(blockMap)[0]
+    if (!firstBlockId) continue
     const block = blockMap[firstBlockId]?.value
-
     if (!block) continue
 
     const parentPage = getBlockParentPage(block, recordMap)
