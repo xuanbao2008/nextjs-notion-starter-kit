@@ -9,12 +9,12 @@ export default siteConfig({
   rootNotionSpaceId: 'ea14b41c-eb0b-419d-86d1-3dbda704ff06',
 
   // basic site info (required)
-  name: 'iine',
-  domain: 'iine.jp',
+  name: 'iine.today',
+  domain: 'iine.today',
   author: 'Bao Doan',
 
   // open graph metadata (optional)
-  description: 'Japan life blog - iine tip',
+  description: 'iine.today - khám phá điều hay ở Nhật mỗi ngày',
 
   // social usernames (optional)
   twitter: 'doanxuanbaoz',
@@ -48,23 +48,22 @@ export default siteConfig({
   // }
   pageUrlOverrides: null,
 
-  pageUrlAdditions: {
-    '/event': '23225e30af1080f499ecf1f45803fe1e',
-    '/about': '9c131551696645d681f44d97b2334924',
-    '/contact': '23225e30af1080b79294d8afa85b9b73'
-  },
-
+  pageUrlAdditions: null,
   // whether to use the default notion navigation style or a custom one with links to
   // important pages
   navigationStyle: 'custom',
   navigationLinks: [
     {
+      title: 'Event',
+      pageId: '23b25e30af1080409f5ee397172a1548'
+    },
+    {
       title: 'About',
-      pageId: '9c131551696645d681f44d97b2334924'
+      pageId: '23325e30af10808fa5acc00f72ee78da'
     },
     {
       title: 'Contact',
-      pageId: '23225e30af1080b79294d8afa85b9b73'
+      pageId: '23925e30af108098907fe3c5115fb2b2'
     }
   ]
 })
