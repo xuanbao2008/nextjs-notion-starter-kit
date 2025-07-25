@@ -7,7 +7,6 @@ import { uuidToId } from './uuid-to-id'
 
 /**
  * Gets the canonical, display-friendly version of a page's ID for use in URLs.
- * Falls back to ID if title/slug not found.
  */
 export const getCanonicalPageId = (
   pageId: string,
@@ -18,17 +17,10 @@ export const getCanonicalPageId = (
 
   const id = uuidToId(pageId)
   const block = recordMap.block?.[pageId]?.value
-
   if (!block) return id
 
-  const locale = normalizeTitle(
-    getPageProperty('Locale', block, recordMap) || ''
-  )
-
-  const category = normalizeTitle(
-    getPageProperty('Category', block, recordMap) || ''
-  )
-
+  const locale = normalizeTitle(getPageProperty('Locale', block, recordMap) || '')
+  const category = normalizeTitle(getPageProperty('Category', block, recordMap) || '')
   const slug = normalizeTitle(
     getPageProperty('slug', block, recordMap) ||
     getPageProperty('Slug', block, recordMap) ||
@@ -37,7 +29,12 @@ export const getCanonicalPageId = (
 
   if (!slug) return id
 
-  const segments = [locale, category, slug].filter(Boolean)
+  const segments = []
+  if (locale) segments.push(locale)
+  if (category) segments.push(category)
+  segments.push(slug)
 
-  return uuid ? segments.join('/') : slug
+  const basePath = segments.join('/')
+
+  return uuid ? `${basePath}` : basePath
 }
