@@ -9,18 +9,18 @@ export const normalizeTitle = (title?: string | null): string => {
     .replaceAll(/[óòỏõọôốồổỗộơớờởỡợ]/g, 'o')
     .replaceAll(/[úùủũụưứừửữự]/g, 'u')
     .replaceAll(/[ýỳỷỹỵ]/g, 'y')
-    .replaceAll(/đ/g, 'd')
+    .replaceAll('đ', 'd') // <- updated to string
 
-    // Replace whitespace and some symbols with hyphens
+    // Replace whitespace and symbols with hyphens
     .replaceAll(/[\s·/_,:;]+/g, '-')
 
-    // Remove all remaining non-word characters except hyphens
+    // Remove remaining non-word characters except hyphens
     .replaceAll(/[^a-z0-9-]/g, '')
 
     // Collapse multiple hyphens
     .replaceAll(/--+/g, '-')
 
-    // Trim hyphens from the start and end (using `.replace`)
+    // Trim hyphens at start/end
     .replace(/^-+/, '')
     .replace(/-+$/, '')
 }
